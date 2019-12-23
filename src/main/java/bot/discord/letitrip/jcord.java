@@ -30,32 +30,6 @@ public class jcord {
     static DocumentBuilder documentBuilder; //add a global document builder
     static final File xmlFile = new File(xmlFilePath); //we want the file to be constant
 
-    private static boolean checkIfNodeExists(Document document, String xpathExpression) throws Exception {
-        boolean matches = false;
-
-        // Create XPathFactory object
-        XPathFactory xpathFactory = XPathFactory.newInstance();
-
-        // Create XPath object
-        XPath xpath = xpathFactory.newXPath();
-
-        try {
-            // Create XPathExpression object
-            XPathExpression expr = xpath.compile(xpathExpression);
-
-            // Evaluate expression result on XML document
-            NodeList nodes = (NodeList) expr.evaluate(document, XPathConstants.NODESET);
-
-            if (nodes != null && nodes.getLength() > 0) {
-                matches = true;
-            }
-
-        } catch (XPathExpressionException e) {
-            e.printStackTrace();
-        }
-        return matches;
-    }
-
     public static void main(String[] args) {
 
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
@@ -69,7 +43,6 @@ public class jcord {
         }
 
         assert documentBuilder != null; //make sure the document builder does != null, no-one likes null pointer exceptions
-
         Document document;
 
         if(xmlFile.exists()) {

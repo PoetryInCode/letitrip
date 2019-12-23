@@ -1,13 +1,19 @@
 package bot.discord.letitrip;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.util.Scanner;
 
-public class App {
-    public static String loginToken() throws FileNotFoundException {
-        FileInputStream stream = new FileInputStream(new File("../token.txt"));
-        String token = stream.toString();
+class App {
+    static String loginToken() {
+        String token = null;
+        try {
+            Scanner scanner = new Scanner(new File("../token"));
+            token = scanner.next();
+            System.out.println(token);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         return token;
     }
 }

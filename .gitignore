@@ -35,7 +35,6 @@ hs_err_pid*
 .settings/
 letitrip.iml
 pom.xml
-src/
 target/
 target/generated-sources/
 target/generated-test-sources/
