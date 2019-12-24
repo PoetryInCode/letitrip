@@ -33,25 +33,6 @@ public class letitrip2 {
     static DocumentBuilder documentBuilder; //add a global document builder
     static final File xmlFile = new File(xmlFilePath); //we want the file to be constant
 
-    public static Document initXML() {
-        DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder documentBuilder = null;
-        //initialise the document builder outside try/catch to reduce
-        //memory footprint
-        try {
-            documentBuilder = builderFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-
-        assert documentBuilder != null; //make sure the document builder does != null, no-one likes null pointer exceptions
-        Document document = documentBuilder.newDocument(); //create the document
-
-        Element servers = document.createElement("servers"); //create servers element
-        document.appendChild(servers); //append to document
-        return document;
-    }
-
     public static void addServer(Document doc, MessageCreateEvent event) {
         Element server = doc.createElement("server");
         Element sIdElem = doc.createElement("serverId");
@@ -59,6 +40,11 @@ public class letitrip2 {
         doc.getChildNodes().item(0).appendChild(server);
         server.appendChild(sIdElem);
         users.appendChild(server);
+    }
+
+    public static void addUser(MessageCreateEvent event, Document document) {
+        document.getElementById(event.getServer().toString());
+        System.out.println(event.getServer().toString());
     }
 
     public static void main(String[] args) {
@@ -77,34 +63,15 @@ public class letitrip2 {
 
                     String sender = event.getMessageAuthor().getName();//get sender name
                     long senderId = event.getMessageAuthor().getId();
-                    String serverIdString = event.getServer().toString();
-
-                    Document document = initXML();
-
-                    Element server = document.createElement("server");
-                    Attr serverId = document.createAttribute("id"); //create a serverName attribute
-                    server.setIdAttributeNode(serverId, true); //set the server id type to serverId
+                    String serverIdString = event.getServer().get().getIdAsString();
 
                     Boolean takeAction = false;
                     Boolean CSSync = false;
 
                     HashMap<Long,Byte> equipped = new HashMap<Long, Byte>();
 
-                    Element users = document.createElement("users");
-                    Element user = document.createElement("user");
-                    //create elements that are relative to each server
-
-                    document.getDocumentElement().normalize();
-                    //normalize the document to make sure there are no formatting errors
-
                     String[] pantEaters = new String[userList.size()];
                     //initialise a string array to the length of users mentioned in the message
-
-                    Attr userId = document.createAttribute(String.valueOf(event.getMessageAuthor().getId()));
-                    user.setAttributeNode(userId);
-
-                    server.appendChild(users);
-                    server.appendChild(user);
 
                     String[] command = message.split(" ");
 
@@ -150,8 +117,43 @@ public class letitrip2 {
                                     e.printStackTrace();
                                 }
                             } else {
-                            }
+                                DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
+                                DocumentBuilder documentBuilder = null;
+                                //initialise the document builder outside try/catch to reduce
+                                //memory footprint
+                                try {
+                                    documentBuilder = builderFactory.newDocumentBuilder();
+                                } catch (ParserConfigurationException e) {
+                                    e.printStackTrace();
+                                }
 
+                                assert documentBuilder != null; //make sure the document builder does != null, no-one likes null pointer exceptions
+                                Document document = documentBuilder.newDocument(); //create the document
+
+                                addUser(event,document);
+
+                                Element servers = document.createElement("servers"); //create servers element
+                                document.appendChild(servers); //append to document
+
+                                Element server = document.createElement("server");
+                                Attr serverId = document.createAttribute("id");//create a serverName attribute
+                                System.out.println(serverIdString);
+                                //serverId.setValue(serverIdString);
+                                server.setIdAttribute(serverIdString, true); //set the server id type to serverId
+
+                                Element users = document.createElement("users");
+                                Element user = document.createElement("user");
+                                //create elements that are relative to each server
+
+                                document.getDocumentElement().normalize();
+                                //normalize the document to make sure there are no formatting errors
+
+                                Attr userId = document.createAttribute(String.valueOf(event.getMessageAuthor().getId()));
+                                user.setIdAttributeNode(userId,true);
+
+                                server.appendChild(users);
+                                server.appendChild(user);
+                            }
                             channel.sendMessage("Will " + opponents + "accept " + sender + "'s challenge?");
                             break;
                     }
