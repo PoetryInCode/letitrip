@@ -1,30 +1,25 @@
 package bot.discord.letitrip;
 
-import org.javacord.api.DiscordApiBuilder;
-import org.javacord.api.entity.channel.TextChannel;
-import org.javacord.api.entity.server.Server;
-import org.javacord.api.entity.user.User;
-import org.javacord.api.event.message.MessageCreateEvent;
-import org.javacord.api.util.logging.ExceptionLogger;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
-import javax.xml.parsers.*;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.validation.Schema;
-import javax.xml.xpath.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
-import org.w3c.dom.*;
+import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.user.User;
+import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.util.logging.ExceptionLogger;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class letitrip2 {
@@ -33,25 +28,6 @@ public class letitrip2 {
     static DocumentBuilder documentBuilder; //add a global document builder
     static final File xmlFile = new File(xmlFilePath); //we want the file to be constant
 
-    public static Document initXML() {
-        DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder documentBuilder = null;
-        //initialise the document builder outside try/catch to reduce
-        //memory footprint
-        try {
-            documentBuilder = builderFactory.newDocumentBuilder();
-        } catch (ParserConfigurationException e) {
-            e.printStackTrace();
-        }
-
-        assert documentBuilder != null; //make sure the document builder does != null, no-one likes null pointer exceptions
-        Document document = documentBuilder.newDocument(); //create the document
-
-        Element servers = document.createElement("servers"); //create servers element
-        document.appendChild(servers); //append to document
-        return document;
-    }
-
     public static void addServer(Document doc, MessageCreateEvent event) {
         Element server = doc.createElement("server");
         Element sIdElem = doc.createElement("serverId");
@@ -59,6 +35,11 @@ public class letitrip2 {
         doc.getChildNodes().item(0).appendChild(server);
         server.appendChild(sIdElem);
         users.appendChild(server);
+    }
+
+    public static void addUser(MessageCreateEvent event, Document document) {
+        document.getElementById(event.getServer().toString());
+        System.out.println(event.getServer().toString());
     }
 
     public static void main(String[] args) {
@@ -79,7 +60,7 @@ public class letitrip2 {
                     long senderId = event.getMessageAuthor().getId();
                     String serverIdString = event.getServer().toString();
 
-                    Document document = initXML();
+                    Document document = documentBuilder.newDocument();
 
                     Element server = document.createElement("server");
                     Attr serverId = document.createAttribute("id"); //create a serverName attribute
