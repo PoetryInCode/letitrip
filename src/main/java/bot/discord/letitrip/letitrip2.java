@@ -1,30 +1,25 @@
 package bot.discord.letitrip;
 
-import org.javacord.api.DiscordApiBuilder;
-import org.javacord.api.entity.channel.TextChannel;
-import org.javacord.api.entity.server.Server;
-import org.javacord.api.entity.user.User;
-import org.javacord.api.event.message.MessageCreateEvent;
-import org.javacord.api.util.logging.ExceptionLogger;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.print.Doc;
 import javax.xml.parsers.*;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.validation.Schema;
-import javax.xml.xpath.*;
 
-import org.w3c.dom.*;
+import org.javacord.api.DiscordApiBuilder;
+import org.javacord.api.entity.channel.TextChannel;
+import org.javacord.api.entity.user.User;
+import org.javacord.api.event.message.MessageCreateEvent;
+import org.javacord.api.util.logging.ExceptionLogger;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
-import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.DefaultHandler;
 
 public class letitrip2 {
@@ -33,13 +28,49 @@ public class letitrip2 {
     static DocumentBuilder documentBuilder; //add a global document builder
     static final File xmlFile = new File(xmlFilePath); //we want the file to be constant
 
-    public static void addServer(Document doc, MessageCreateEvent event) {
+    public static Element addServer(Document doc, MessageCreateEvent event) {
         Element server = doc.createElement("server");
         Element sIdElem = doc.createElement("serverId");
         Element users = doc.createElement("users");
         doc.getChildNodes().item(0).appendChild(server);
         server.appendChild(sIdElem);
         users.appendChild(server);
+        return server;
+    }
+
+    public static boolean isInitialized(String id, Document document) {
+        if(document.getElementById(id) != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public static boolean serverInitialized(MessageCreateEvent event, Document document) {
+        return isInitialized(event.getServer().get().getIdAsString(), document);
+    }
+    public static boolean userInitialized(User user, Document document) {
+        return isInitialized(user.getIdAsString(), document);
+    }
+
+    public static void notifyOwner(MessageCreateEvent event, String message) {
+        event.getChannel().sendMessage(event.getServer().get().getOwner().getMentionTag() + " " + message);
+    }
+
+    public static Element addUser(MessageCreateEvent event, User user, Document document) {
+        Element server = document.getElementById(event.getServer().get().getIdAsString());
+        Element newUser = null;
+        if(serverInitialized(event, document)) {
+            if(userInitialized(user, document)) {
+            } else {
+                newUser = document.createElement("user");
+                newUser.setIdAttribute(user.getIdAsString(),true);
+            }
+        } else {
+            notifyOwner(event, "Your server is not set up with the letitrip bot. Would you like to set it up now?" +
+                    " Run --setup to enable the bot");
+            return null;
+        }
+        return newUser;
     }
 
     public static void addUser(MessageCreateEvent event, Document document) {
@@ -63,6 +94,7 @@ public class letitrip2 {
 
                     String sender = event.getMessageAuthor().getName();//get sender name
                     long senderId = event.getMessageAuthor().getId();
+
                     String serverIdString = event.getServer().get().getIdAsString();
 
                     Boolean takeAction = false;
@@ -88,34 +120,26 @@ public class letitrip2 {
                             }
 
                             if(xmlFile.exists()) {
-                                SAXParserFactory parserFactory = SAXParserFactory.newInstance();
-                                try {
-                                    SAXParser parser = parserFactory.newSAXParser();
-                                    DefaultHandler handler = new DefaultHandler() {
-                                        @Override
-                                        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-                                            super.startElement(uri, localName, qName, attributes);
-                                            System.out.println("URI: " + uri + " LOCALNAME: " + localName + "QNAME: " + qName + "ATTRIBUTES: " + attributes);
-                                        }
-                                        @Override
-                                        public void characters(char[] ch, int start, int length) throws SAXException {
-                                            super.characters(ch, start, length);
-                                        }
+                                Document document = documentBuilder.newDocument();
 
-                                        @Override
-                                        public void endDocument() throws SAXException {
-                                            super.endDocument();
-                                        }
-                                    };
-                                    parser.parse(xmlFile, handler);
+                                Element server = addServer(document, event);
+                                User messageAuthor = event.getMessageAuthor().asUser().get();
+                                Element user = addUser(event, messageAuthor, document);
 
-                                } catch (ParserConfigurationException e) {
-                                    e.printStackTrace();
-                                } catch (SAXException e) {
-                                    e.printStackTrace();
-                                } catch (IOException e) {
-                                    e.printStackTrace();
-                                }
+                                Attr serverId = document.createAttribute("id"); //create a serverName attribute
+                                server.setIdAttributeNode(serverId, true); //set the server id type to serverId
+
+                                Element users = document.createElement("users");
+
+                                document.getDocumentElement().normalize();
+                                //normalize the document to make sure there are no formatting errors
+
+                                Attr userId = document.createAttribute(String.valueOf(event.getMessageAuthor().getId()));
+                                user.setAttributeNode(userId);
+
+                                server.appendChild(users);
+                                server.appendChild(user);
+
                             } else {
                                 DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
                                 DocumentBuilder documentBuilder = null;

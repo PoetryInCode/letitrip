@@ -2,7 +2,6 @@ package bot.discord.letitrip;
 
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.channel.TextChannel;
-import org.javacord.api.entity.server.Server;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.util.logging.ExceptionLogger;
 
@@ -11,15 +10,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.print.Doc;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.xpath.*;
 
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
@@ -34,7 +28,7 @@ public class jcord {
 
         DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder documentBuilder = null;
-        //initialise the document builder outside try/catch to reduce
+        //initialise the cument builder outside try/catch to reduce
         //memory footprint
         try {
             documentBuilder = builderFactory.newDocumentBuilder();
