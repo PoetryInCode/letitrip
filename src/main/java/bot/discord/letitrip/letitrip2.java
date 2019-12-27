@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 
+import javax.enterprise.event.Observes;
 import javax.print.Doc;
 import javax.xml.parsers.*;
 
+import io.quarkus.runtime.StartupEvent;
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.user.User;
@@ -76,6 +78,10 @@ public class letitrip2 {
     public static void addUser(MessageCreateEvent event, Document document) {
         document.getElementById(event.getServer().toString());
         System.out.println(event.getServer().toString());
+    }
+
+    public void start(@Observes StartupEvent event) {
+        main(null);
     }
 
     public static void main(String[] args) {
