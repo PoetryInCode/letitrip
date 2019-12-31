@@ -38,42 +38,48 @@ public class letitrip2 {
         return server;
     }
 
-    public static boolean isInitialized(String id, Document document) {
-        if(document.getElementById(id) != null) {
-            return true;
-        } else {
-            return false;
+    private static boolean isInitialized(String id, Document document) {
+        return document.getElementById(id) != null;
+    }
+    private static boolean serverInitialized(MessageCreateEvent event, Document document) {
+        boolean initialized = false;
+        if(event.getServer().isPresent()) {
+            if (isInitialized(event.getServer().get().getIdAsString(), document)) {
+                initialized = true;
+            } else {
+                notifyOwner(event, "Your server is not set up with the letitrip bot. Would you like to set it up now?" +
+                        " Run --setup to enable the bot");
+            }
         }
+        return initialized;
     }
-    public static boolean serverInitialized(MessageCreateEvent event, Document document) {
-        return isInitialized(event.getServer().get().getIdAsString(), document);
-    }
-    public static boolean userInitialized(User user, Document document) {
+    private static boolean userInitialized(User user, Document document) {
         return isInitialized(user.getIdAsString(), document);
     }
 
-    public static void notifyOwner(MessageCreateEvent event, String message) {
+    private static void notifyOwner(MessageCreateEvent event, String message) {
         event.getChannel().sendMessage(event.getServer().get().getOwner().getMentionTag() + " " + message);
     }
 
-    public static Element addUser(MessageCreateEvent event, User user, Document document) {
+    private static Element addUser(MessageCreateEvent event, User user, Document document) {
         Element server = document.getElementById(event.getServer().get().getIdAsString());
         Element newUser = null;
         if(serverInitialized(event, document)) {
             if(userInitialized(user, document)) {
+                System.err.println("User already initialized");
             } else {
                 newUser = document.createElement("user");
                 newUser.setIdAttribute(user.getIdAsString(),true);
+                Element users = (Element) server.getChildNodes().item(0);
+                users.appendChild(newUser);
             }
         } else {
-            notifyOwner(event, "Your server is not set up with the letitrip bot. Would you like to set it up now?" +
-                    " Run --setup to enable the bot");
             return null;
         }
         return newUser;
     }
 
-    public static void addUser(MessageCreateEvent event, Document document) {
+    private static void addUser(MessageCreateEvent event, Document document) {
         document.getElementById(event.getServer().toString());
         System.out.println(event.getServer().toString());
     }
@@ -114,20 +120,22 @@ public class letitrip2 {
                         case ("--letitrip") :
                             String opponents = "";
 
+                            Document document = documentBuilder.newDocument();
+
                             for(int i=0; i<userList.size();i++) {
-                                pantEaters[i] = userList.get(i).getMentionTag();
+                                if(userInitialized(userList.get(i),document)) {
+                                    pantEaters[i] = userList.get(i).getMentionTag();
+                                } else {
+                                    Element newuser = addUser(event, userList.get(i), document);
+                                }
                                 opponents = opponents.concat(pantEaters[i] + " ");
                             }
 
                             if(xmlFile.exists()) {
-                                Document document = documentBuilder.newDocument();
 
                                 Element server = addServer(document, event);
                                 User messageAuthor = event.getMessageAuthor().asUser().get();
                                 Element user = addUser(event, messageAuthor, document);
-
-                                Attr serverId = document.createAttribute("id"); //create a serverName attribute
-                                server.setIdAttributeNode(serverId, true); //set the server id type to serverId
 
                                 Element users = document.createElement("users");
 
@@ -152,7 +160,6 @@ public class letitrip2 {
                                 }
 
                                 assert documentBuilder != null; //make sure the document builder does != null, no-one likes null pointer exceptions
-                                Document document = documentBuilder.newDocument(); //create the document
 
                                 addUser(event,document);
 
