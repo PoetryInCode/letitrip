@@ -1,3 +1,8 @@
+# Custom Exceptions
+There is a good chance that this branch will not be continued as I don't have a need for custom exceptions because im 
+not building a framework or api.
+They would just be nice to have as a luxury feature. If you would like to contribute to this branch I would be grateful.
+
 # Let-It-Rip
 This is my beyblades discord bot that enables server members to play beyblades against one another
 
