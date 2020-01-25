@@ -1,5 +1,6 @@
 package bot.discord.letitrip.dataMethod;
 
+import bot.discord.letitrip.App;
 import org.javacord.api.event.message.MessageCreateEvent;
 
 import java.io.File;
@@ -10,6 +11,7 @@ import java.io.IOException;
 public class fileMethod {
 
     static File basePath = new File("./botData.d/");
+    static File log = new File("log.txt");
     static String path;
     static MessageCreateEvent messageEvent;
 
@@ -17,42 +19,44 @@ public class fileMethod {
         try {
             throw new IOException();
         } catch (IOException e) {
-            File errorFile = new File(path + "error.out");
+            File localErrorFile = new File(path + "error.out");
             try {
-                FileOutputStream stream = new FileOutputStream(errorFile);
+                FileOutputStream stream = new FileOutputStream(localErrorFile);
                 stream.write(e.getMessage().getBytes());
             } catch (IOException e1) {
-                e1.printStackTrace();
-                System.err.println(
+                App.sysLog(e1.toString());
+                App.sysLog(
                         "#######################################################\n" +
-                                "#Could not create error file, folder must be read only#\n" +
-                                "#######################################################\n"
+                        "#Could not create error file, folder must be read only#\n" +
+                        "#######################################################\n"
                 );
             }
             e.printStackTrace();
-            System.err.println("File already exists or could not create path");
+            App.sysLog("File already exists or could not create path");
         }
     }
 
     public static void addServer(MessageCreateEvent event) {
         messageEvent = event;
-        String path = basePath.getPath().concat(String.valueOf(event.getServer().get().getId()) + "/");
-        File serverFile = new File(path);
-        if(serverFile.mkdir()) {
-            System.out.println("Created new server directory: \"" + path + "\"");
-            path = path.concat("config");
-            File serverConfig = new File(path);
-            if(serverConfig.canRead()) {
-                if(serverConfig.canWrite()) {
-                    try {
-                        FileOutputStream configStream = new FileOutputStream(serverConfig);
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
+        if(event.getServer().isPresent()) {
+            String path = basePath.getPath().concat(event.getServer().get().getId() + "/");
+            File serverFile = new File(path);
+            if(serverFile.mkdir()) {
+                App.sysLog("Created new server directory: \"" + path + "\"");
+                path = path.concat("config");
+                File serverConfig = new File(path);
+                if (serverConfig.canRead()) {
+                    if (serverConfig.canWrite()) {
+                        try {
+                            FileOutputStream configStream = new FileOutputStream(serverConfig);
+                        } catch (FileNotFoundException e) {
+                            App.sysLog(e.toString());
+                        }
                     }
                 }
+            } else {
+                createErrorFile();
             }
-        } else {
-            createErrorFile();
         }
     }
 }
