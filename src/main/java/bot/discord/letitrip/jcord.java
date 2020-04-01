@@ -4,19 +4,16 @@ import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.util.logging.ExceptionLogger;
+import org.w3c.dom.*;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-
-import javax.print.Doc;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.w3c.dom.*;
-import org.xml.sax.SAXException;
 
 public class jcord {
 
@@ -185,9 +182,7 @@ public class jcord {
                 }
 
             });
-
             System.out.println("Invitation URL for the bot: " + api.createBotInvite());
-
         }).exceptionally(ExceptionLogger.get());
     }
 }

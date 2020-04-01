@@ -60,4 +60,8 @@ public class fileMethod {
             }
         }
     }
+
+    public static void addUser(MessageCreateEvent event) {
+        
+    }
 }

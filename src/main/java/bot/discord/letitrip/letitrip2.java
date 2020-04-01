@@ -1,26 +1,20 @@
 package bot.discord.letitrip;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-
-import javax.print.Doc;
-import javax.xml.parsers.*;
-
 import org.javacord.api.DiscordApiBuilder;
 import org.javacord.api.entity.channel.TextChannel;
 import org.javacord.api.entity.user.User;
 import org.javacord.api.event.message.MessageCreateEvent;
 import org.javacord.api.util.logging.ExceptionLogger;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.util.HashMap;
+import java.util.List;
 
 public class letitrip2 {
 
@@ -89,7 +83,6 @@ public class letitrip2 {
         ).login().thenAccept(api -> { //login to the bot with the token
             api.addMessageCreateListener(event -> { //add a message listener to the bot
                 //the message listener calls whenever a message is sent in a server that runs this bot
-
                 final String callSign = "--"; //a call-sign for the bot
 
                 String message = event.getMessageContent(); //create a string with out of the message content
@@ -113,15 +106,16 @@ public class letitrip2 {
 
                     String[] command = message.split(" ");
 
-                    switch (command[0]) {
+                    switch (command[0]) {//detecting different commands, and executing as such
                         default:
                             channel.sendMessage("Invalid command. Please check spelling");
                             break;
-                        case ("--letitrip") :
+                        case ("--letitrip") : //letitrip command
                             String opponents = "";
-
+                            //create a blank opponents list
                             Document document = documentBuilder.newDocument();
 
+                            //iterate through the users mentioned and check if they are viable to compete
                             for(int i=0; i<userList.size();i++) {
                                 if(userInitialized(userList.get(i),document)) {
                                     pantEaters[i] = userList.get(i).getMentionTag();
