@@ -1,3 +1,4 @@
+# Project On Hold (Incomplete)
 # Let-It-Rip
 This is my beyblades discord bot that enables server members to play beyblades against one another
 
